@@ -14,9 +14,9 @@ fn shutdown_event() -> RawEvent {
 }
 
 fn is_shutdown_event(event: &RawEvent) -> bool {
-    if let &RawEvent {
+    if let RawEvent {
         path: None,
-        op: Err(Error::Generic(ref err)),
+        op: Err(Error::Generic(err)),
         cookie: None,
     } = event
     {
