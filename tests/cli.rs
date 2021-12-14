@@ -37,12 +37,14 @@ fn no_path() {
 #[test]
 fn one_path() {
     let test_dir = TempDir::new("one_path").unwrap();
-    let test_dir_path = fs::canonicalize(test_dir.path()).expect("Failed to canonicalize temp dir"); // necessary on MacOS to prepend `/private` to the `/var` path created by TempDir?.
+    
+    // NOTE(mickvangelderen): This canonicalize is necessary to prepend `/private` to the temp path returned by `TempDir.path()` on MacOS.
+    let test_dir_path = fs::canonicalize(test_dir.path()).expect("Failed to canonicalize temp dir"); 
+
     let mut child = Command::new(exe_path())
         .arg(&test_dir_path)
         .env("RUST_LOG", "")
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
         .spawn()
         .expect("Failed to run command!");
 
@@ -65,11 +67,10 @@ fn one_path() {
     });
 
     // NOTE(mickvangelderen): This thread::sleep is the difference between the `recv_timeout` timing out and properly receiving the first line from the spawned process' stdout.
-    // I do not understand why it makes the difference.
-    // My best guess is that the file is created, an event is picked up and written by the spawned process and during all this time we haven't started listening to stdio yet?
-    // That seems unlikely though.
+    // My best guess is that the file is created before the spawned process has started watching the folder.
+    // That could be fixed by outputting a line after the watcher is initialized and waiting on it here.
     // For this assignment I will concede and leave things here.
-    thread::sleep(Duration::from_millis(100));
+    thread::sleep(Duration::from_secs(1));
 
     let read_line = || {
         rx.recv_timeout(time::Duration::from_secs(1))
@@ -96,6 +97,10 @@ fn one_path() {
     } else {
         assert_eq!(read_line(), format!("CREATE {:?}", file_txt_path.display()));
         assert_eq!(read_line(), format!("WRITE {:?}", file_txt_path.display()));
+    }
+
+    if cfg!(target_os = "linux") {
+        assert_eq!(read_line(), format!("CLOSE_WRITE {:?}", file_txt_path.display()));
     }
 
     assert_eq!(read_line(), format!("WRITE {:?}", deep_dir_path.display()));
