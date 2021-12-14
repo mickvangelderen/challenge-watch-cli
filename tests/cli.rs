@@ -57,7 +57,7 @@ fn one_path() {
 
         move || {
             for line in lines {
-                let line = line.expect("Failed to read line form stdout!");
+                let line = line.expect("Failed to read line from stdout!");
                 if let Err(_) = tx.send(line) {
                     // Stop reading if we can not send anymore.
                     break;
@@ -104,6 +104,8 @@ fn one_path() {
     }
 
     assert_eq!(read_line(), format!("WRITE {:?}", deep_dir_path.display()));
+
+    drop(rx);
 
     child.kill().expect("Failed to kill child!"); // Might want to rename this variable.
 
