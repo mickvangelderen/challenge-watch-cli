@@ -20,7 +20,7 @@ The requirements as provided and the assumptions I have made.
 
  - [x] set up cli basics
  - [x] create basic integration tests
- - [ ] core implementation
+ - [x] core implementation
  - [ ] finishing touches
 
 ## Bonus

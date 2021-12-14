@@ -112,3 +112,8 @@ fn one_path() {
 
     child.wait().expect("Failed to wait for child to exit!");
 }
+
+#[test]
+fn multiple_paths() {
+    // TODO(mickvangelderen): Would do if I had more time.
+}
