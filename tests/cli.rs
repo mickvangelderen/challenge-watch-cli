@@ -36,9 +36,9 @@ fn no_path() {
 #[test]
 fn one_path() {
     let test_dir = TempDir::new("one_path").unwrap();
-
+    let test_dir_path = fs::canonicalize(test_dir.path()).expect("Failed to canonicalize temp dir"); // necessary on MacOS to prepend `/private` to the `/var` path created by TempDir?.
     let mut child = Command::new(exe_path())
-        .arg(test_dir.path())
+        .arg(&test_dir_path)
         .env("RUST_LOG", "")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -68,7 +68,7 @@ fn one_path() {
     thread::sleep(time::Duration::from_secs(1));
 
     // Create a directory and wait on a create line being printed.
-    let deep_dir = test_dir.path().join("deep");
+    let deep_dir = test_dir_path.join("deep");
     fs::create_dir(&deep_dir).expect("Failed to create deep dir!");
     let create_dir_line = rx
         .recv_timeout(time::Duration::from_secs(1))
