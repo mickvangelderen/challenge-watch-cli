@@ -26,3 +26,4 @@ The requirements as provided and the assumptions I have made.
 ## Bonus
 
  - [x] [run tests and lints in CI](https://github.com/mickvangelderen/challenge_watch_cli/actions)
+ - [x] gracefully exits on program interrupt signal
