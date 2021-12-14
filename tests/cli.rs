@@ -37,9 +37,9 @@ fn no_path() {
 #[test]
 fn one_path() {
     let test_dir = TempDir::new("one_path").unwrap();
-    
+
     // NOTE(mickvangelderen): This canonicalize is necessary to prepend `/private` to the temp path returned by `TempDir.path()` on MacOS.
-    let test_dir_path = fs::canonicalize(test_dir.path()).expect("Failed to canonicalize temp dir"); 
+    let test_dir_path = fs::canonicalize(test_dir.path()).expect("Failed to canonicalize temp dir");
 
     let mut child = Command::new(exe_path())
         .arg(&test_dir_path)
@@ -100,10 +100,11 @@ fn one_path() {
     }
 
     if cfg!(target_os = "linux") {
-        assert_eq!(read_line(), format!("CLOSE_WRITE {:?}", file_txt_path.display()));
+        assert_eq!(
+            read_line(),
+            format!("CLOSE_WRITE {:?}", file_txt_path.display())
+        );
     }
-
-    assert_eq!(read_line(), format!("WRITE {:?}", deep_dir_path.display()));
 
     drop(rx);
 
