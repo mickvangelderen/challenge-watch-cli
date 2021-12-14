@@ -68,23 +68,40 @@ fn one_path() {
     thread::sleep(time::Duration::from_secs(1));
 
     // Create a directory and wait on a create line being printed.
-    let deep_dir = test_dir_path.join("deep");
-    fs::create_dir(&deep_dir).expect("Failed to create deep dir!");
-    let create_dir_line = rx
+    let deep_dir_path = test_dir_path.join("deep");
+    fs::create_dir(&deep_dir_path).expect("Failed to create deep dir!");
+    let line = rx
         .recv_timeout(time::Duration::from_secs(1))
         .expect("Did not receive line in time!");
-    assert_eq!(create_dir_line, format!("CREATE {:?}", deep_dir.display()));
+    assert_eq!(line, format!("CREATE {:?}", deep_dir_path.display()));
 
     // Create a file and wait on a create line being printed.
-    let file_txt_path = deep_dir.join("file.txt");
+    let file_txt_path = deep_dir_path.join("file.txt");
     fs::write(&file_txt_path, "Programming is cool!").expect("Failed to create file.txt!");
-    let create_file_line = rx
+
+    if cfg!(target_os = "macos") {
+        let line = rx
+            .recv_timeout(time::Duration::from_secs(1))
+            .expect("Did not receive line in time!");
+        assert_eq!(
+            line,
+            format!("CREATE | WRITE {:?}", file_txt_path.display())
+        );
+    } else {
+        let line = rx
+            .recv_timeout(time::Duration::from_secs(1))
+            .expect("Did not receive line in time!");
+        assert_eq!(line, format!("CREATE {:?}", file_txt_path.display()));
+        let line = rx
+            .recv_timeout(time::Duration::from_secs(1))
+            .expect("Did not receive line in time!");
+        assert_eq!(line, format!("WRITE {:?}", file_txt_path.display()));
+    }
+
+    let line = rx
         .recv_timeout(time::Duration::from_secs(1))
         .expect("Did not receive line in time!");
-    assert_eq!(
-        create_file_line,
-        format!("CREATE {:?}", file_txt_path.display())
-    );
+    assert_eq!(line, format!("WRITE {:?}", deep_dir_path.display()));
 
     child.kill().expect("Failed to kill child!"); // Might want to rename this variable.
 
